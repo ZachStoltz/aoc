@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -16,60 +17,115 @@ func solveDayOne(value int, hasMoreLines bool, scanner *bufio.Scanner) int {
 		return value
 	}
 
-	var chars = strings.Split(scanner.Text(), "")
-	var firstNumString = getFirstNum(0, "", chars)
-	var lastNumString = getLastNum(len(chars) - 1, "", chars)
+	text := scanner.Text()
+
+	fmt.Println(text)
+
+	chars := strings.Split(text, "")
+	firstNumString := getFirstNum(0, 0, "", "", chars)
+	lastNumStartPos := len(chars) - 1
+	lastNumString := getLastNum(lastNumStartPos, lastNumStartPos, "", "", chars)
 
 	// NOTE: Def should handle error.... oh well
 	digit, _ := getDigit(firstNumString + lastNumString)
 
-	fmt.Printf("first num %s <-> second num %s num [%d] \n", firstNumString, lastNumString, digit)
+	info := fmt.Sprintf("first %s <-> second %s [%d] \n", firstNumString, lastNumString, digit)
+
+	fmt.Print(info)
 
 	return solveDayOne(value + digit, scanner.Scan(), scanner)
+}
+
+func getDigitFromString(word string) (int, error) {
+	switch word {
+		case "one": return 1, nil;
+		case "two": return 2, nil;
+		case "three": return 3,nil;
+		case "four": return 4,nil;
+		case "five": return 5, nil;
+		case "six": return 6, nil;
+		case "seven": return 7, nil;
+		case "eight": return 8, nil;
+		case "nine": return 9, nil;
+		default: return 0, errors.New("Fail");
+	}
 }
 
 func getDigit(char string) (int, error) {
 	return strconv.Atoi(char)
 }
 
-func getFirstNum(idx int, value string, chars []string) string {
+func getFirstNum(idx int, currPos int, currValue string, value string, chars []string) string {
+	maxLengthOfCharacterCount := 5
+
 	// GoLang N00B.... should prob return tuple int, error
-	if idx > len(chars) {
+	if currPos >= len(chars) {
 		return value
 	}
 
-	str := chars[idx]
+	char := chars[currPos]
+	str := currValue + char
+	digit, err := getDigit(char)
+	dig2, err2 := getDigitFromString(str)
+	nextIdx := currPos + 1
 
-	_, err := getDigit(str)
-
-	if (err != nil) {
-		i := idx + 1
-		return getFirstNum(i, "", chars)
+	if (err == nil && len(str) < maxLengthOfCharacterCount) {
+		return char
 	}
 
-	return str
+	if (err2 == nil) { return strconv.Itoa(dig2) }
+
+	if (len(str) >= maxLengthOfCharacterCount) {
+		strt := idx + 1
+
+		if (err == nil) {
+			return getFirstNum(strt, strt, value, char, chars)
+		}
+
+
+		return getFirstNum(strt, strt, "", value, chars)
+	}
+
+
+	if (err == nil) { return getFirstNum(idx, nextIdx, str, strconv.Itoa(digit) , chars) }
+
+	return getFirstNum(idx, nextIdx, str, value, chars)
 }
 
-func getLastNum(idx int, value string, chars []string) string {
-	// GoLang N00B.... should prob return tuple int, error
-	if idx < 0 {
-		return value
+func getLastNum(idx int, currPos int, currValue string, value string, chars []string) string {
+	maxLengthOfCharacterCount := 5
+
+	char := chars[currPos]
+	str :=  char + currValue
+	digit, err := getDigit(char)
+	nextIdx := currPos - 1
+	dig2, err2 := getDigitFromString(str)
+
+	if (err == nil && len(str) < maxLengthOfCharacterCount) {
+		return char
 	}
 
-	str := chars[idx]
+	if (err2 == nil) { return strconv.Itoa(dig2) }
 
-	_, err := getDigit(str)
+	if (len(str) >= maxLengthOfCharacterCount) {
+		strt := idx - 1
 
-	if (err != nil) {
-		i := idx - 1
-		return getLastNum(i, "", chars)
+		if (err == nil) {
+			return getLastNum(strt, strt, value, char, chars)
+		}
+
+		return getLastNum(strt, strt, "", value, chars)
 	}
 
-	return str
+	if (err == nil) {
+		return getLastNum(idx, nextIdx, str, strconv.Itoa(digit) , chars)
+	}
+
+	return getLastNum(idx, nextIdx, str, value, chars)
 }
 
 func main() {
-    file, err := os.Open("/Users/zachstoltz/develop/aoc/day1/data-test")
+    file, err := os.Open("/Users/zachstoltz/develop/aoc/day1/data-p2")
     if err != nil {
         log.Fatal(err)
     }
@@ -79,7 +135,9 @@ func main() {
 
 		digit := solveDayOne(0, scanner.Scan(), scanner)
 
-		fmt.Printf("Final Number %d\n", digit)
+		finalPrint := fmt.Sprintf("Final Number %d\n", digit)
+
+		fmt.Print(finalPrint)
 
     if err := scanner.Err(); err != nil {
         log.Fatal(err)
