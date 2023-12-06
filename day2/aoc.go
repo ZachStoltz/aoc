@@ -11,6 +11,11 @@ import (
 )
 
 func main() {
+	partOne()
+	partTwo()
+}
+
+func partOne() {
 	file, err := os.Open("/Users/zachstoltz/develop/aoc/day2/data-p1")
 	if err != nil {
 			log.Fatal(err)
@@ -19,9 +24,9 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	digit := solveDayTwo(0, scanner.Scan(), scanner)
+	digit := solveDayTwoPartOne(0, scanner.Scan(), scanner)
 
-	finalPrint := fmt.Sprintf("Final Number %d\n", digit)
+	finalPrint := fmt.Sprintf("Part One %d\n", digit)
 
 	fmt.Print(finalPrint)
 
@@ -30,7 +35,7 @@ func main() {
 	}
 }
 
-func solveDayTwo(sum int, hasMoreLines bool, scanner *bufio.Scanner) int {
+func solveDayTwoPartOne(sum int, hasMoreLines bool, scanner *bufio.Scanner) int {
 	redMax := 12
 	greenMax := 13
 	blueMax := 14
@@ -47,7 +52,7 @@ func solveDayTwo(sum int, hasMoreLines bool, scanner *bufio.Scanner) int {
 		nextSum = sum + gameId
 	}
 
-	return solveDayTwo(nextSum, scanner.Scan(), scanner);
+	return solveDayTwoPartOne(nextSum, scanner.Scan(), scanner);
 }
 
 func validGame(text string, redMax int, greenMax int, blueMax int) (int, bool) {
@@ -86,4 +91,54 @@ func validGame(text string, redMax int, greenMax int, blueMax int) (int, bool) {
 	}
 
 	return gameId, err == nil && validGame
+}
+
+func partTwo() {
+	file, err := os.Open("/Users/zachstoltz/develop/aoc/day2/data-p2")
+	if err != nil {
+			log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	digit := solveDayTwoPartTwo(0, scanner.Scan(), scanner)
+
+	finalPrint := fmt.Sprintf("Part two %d\n", digit)
+
+	fmt.Print(finalPrint)
+
+	if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+	}
+}
+
+func solveDayTwoPartTwo(sum int, hasMoreLines bool, scanner *bufio.Scanner) int {
+	if (!hasMoreLines) {
+		return sum
+	}
+	digitAndColorPattern := regexp.MustCompile(`\d+\s(?:blue|green|red)`)
+
+	text := scanner.Text()
+	rollupByColor := make(map[string]int)
+
+	groups := digitAndColorPattern.FindAllStringSubmatch(text, -1)
+
+	for _, group := range groups {
+		split := strings.Split(group[0], " ")
+		digit, _ := strconv.Atoi(split[0])
+		color:= split[1]
+
+		if (rollupByColor[color] == 0 || digit > rollupByColor[color]) {
+			rollupByColor[color] = digit
+		}
+	}
+
+	power := 1
+
+	for _, total := range rollupByColor {
+		power *= total
+	}
+
+	return solveDayTwoPartTwo(sum + power, scanner.Scan(), scanner)
 }
