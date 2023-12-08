@@ -5,23 +5,25 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
 func main() {
-	// partOne()
+	partOne()
 	// partTwo()
 }
 
 func partOne() {
-	file, err := os.Open("/Users/zachstoltz/develop/aoc/day4/test")
+	file, err := os.Open("/Users/zachstoltz/develop/aoc/day4/p1")
 	if err != nil {
 			log.Fatal(err)
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	digit := solveDayFourPartOne([][]string{}, scanner.Scan(), scanner)
+	digit := solveDayFourPartOne(0, scanner.Scan(), scanner)
 	finalPrint := fmt.Sprintf("Part One %d\n", digit)
 
 	fmt.Print(finalPrint)
@@ -31,16 +33,38 @@ func partOne() {
 	}
 }
 
-func solveDayFourPartOne(matrix [][]string, hasMoreLines bool, scanner *bufio.Scanner) int {
-	if (hasMoreLines) {
-		split := strings.Split(scanner.Text(), "")
+func solveDayFourPartOne(sum int, hasMoreLines bool, scanner *bufio.Scanner) int {
+	if (!hasMoreLines) { return sum }
 
-		matrix = append(matrix, split)
+		text := scanner.Text()
+		text = regexp.MustCompile	(`\s\s`).ReplaceAllString(text, " ")
+		text = regexp.MustCompile(`Card\s\d+:\s`).ReplaceAllString(text, "")
+		split := strings.Split(text, " | ")
+		card := make(map[int]bool)
+		cardAmt := 0
 
-		return solveDayFourPartOne(matrix, scanner.Scan(), scanner)
-	}
+		for _, val := range strings.Split(split[0], " ") {
+			num, _ := strconv.Atoi(val)
 
-	return 0;
+			card[num] = true
+		}
+
+		for _, val := range strings.Split(split[1], " ") {
+			num, _ := strconv.Atoi(val)
+
+			if card[num] {
+				if cardAmt <= 1 {
+					cardAmt += 1
+					continue
+				}
+
+				cardAmt *= 2
+			}
+		}
+
+		sum += cardAmt
+
+		return solveDayFourPartOne(sum, scanner.Scan(), scanner)
 }
 
 func partTwo() {
