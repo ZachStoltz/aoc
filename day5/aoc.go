@@ -181,23 +181,16 @@ func getDestination(input int, lookups [][]int) int {
 
 		fmt.Printf("input %d src %d dest %d range %d\n", input, src, dest, rangeStop)
 
-		if ((input >= src || input <= lastSrcNumber) && diff <= rangeStop) {
-			for i := 0; i < rangeStop; i++ {
-				s := src + i
-				d := dest + i
+		if ((input >= src && input <= lastSrcNumber) && diff <= rangeStop) {
+			srcDiff := input - src
 
-				if (s == input) {
-					out = d
-					break
-				}
-			}
+			out = dest + srcDiff
 		}
 
 		if (out == 0) {
 			out = input
 		}
 	}
-
 	return out
 }
 
