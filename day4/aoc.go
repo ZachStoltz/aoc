@@ -11,8 +11,8 @@ import (
 )
 
 func main() {
-	partOne()
-	// partTwo()
+	// partOne()
+	partTwo()
 }
 
 func partOne() {
@@ -87,14 +87,68 @@ func partTwo() {
 
 func solveDayFourPartTwo(contents [][]string, hasMoreLines bool, scanner *bufio.Scanner) int {
 	if (hasMoreLines) {
-		split := strings.Split(scanner.Text(), "")
-
-		fmt.Println(split)
+		text := scanner.Text()
+		text = regexp.MustCompile	(`\s\s`).ReplaceAllString(text, " ")
+		text = regexp.MustCompile(`Card\s\d+:\s`).ReplaceAllString(text, "")
+		split := strings.Split(text, " | ")
 
 		contents = append(contents, split)
 
 		return solveDayFourPartTwo(contents, scanner.Scan(), scanner)
 	}
 
-	return 0
+	cardLookup := make(map[int]map[int]bool)
+	cardPlayLookup := make(map[int]string)
+	cardsByNumber := make([][]string, len(contents))
+
+	for idx, card := range contents {
+		cardLookup[idx] = make(map[int]bool)
+
+		for _, val := range strings.Split(card[0]," ") {
+			num, _ := strconv.Atoi(val)
+
+			cardLookup[idx][num] = true
+		}
+
+		cardsByNumber[idx] = []string{card[1]}
+		cardPlayLookup[idx] = card[1]
+	}
+
+	return completeScratchOffs(cardLookup, cardPlayLookup, cardsByNumber)
+}
+
+func completeScratchOffs(cardLookup map[int]map[int]bool, cardPlayLookup map[int]string, contents [][]string) int {
+	for idx, cards := range contents {
+		valueLookup := cardLookup[idx]
+
+		for _, card := range cards {
+			winCount := 0
+
+			for _, val := range strings.Split(card, " ") {
+				num, _ := strconv.Atoi(val)
+
+				if valueLookup[num] {
+					winCount++
+				}
+			}
+
+			fmt.Printf("Card %d win count %d\n", idx + 1, winCount)
+
+			for i := 1; i <= winCount; i++ {
+				nextIdx := idx + i
+
+				nextCards := contents[nextIdx]
+
+				contents[nextIdx] = append(nextCards, cardPlayLookup[nextIdx])
+			}
+		}
+	}
+
+	total := 0
+
+	for _, cards := range contents {
+		total += len(cards)
+	}
+
+	return total
 }
