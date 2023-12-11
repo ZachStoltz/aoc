@@ -11,11 +11,10 @@ import (
 )
 
 func main() {
-	partOne()
-	// partTwo()
+	partOneAndTwo()
 }
 
-func partOne() {
+func partOneAndTwo() {
 	file, err := os.Open("/Users/zachstoltz/develop/aoc/day5/p1")
 	if err != nil {
 			log.Fatal(err)
@@ -56,10 +55,14 @@ func solveDayFivePartOne(hasMoreLines bool, curProcessType *int, scanner *bufio.
 			if (seedRowRegex.MatchString(line)) {
 				items := strings.Split(regexp.MustCompile(`seeds:\s`).ReplaceAllString(line, ""), " ")
 
-				for _, item := range items {
-					seed, _ := strconv.Atoi(item)
+				for j := 0; j < len(items); j += 2 {
+					item := items[j]
+					val, _ := strconv.Atoi(item)
+					nextVal, _ := strconv.Atoi(items[j + 1])
 
-					seeds = append(seeds, seed)
+					for i := val; i <= val + nextVal; i++ {
+						seeds = append(seeds, i)
+					}
 				}
 
 				return solveDayFivePartOne(scanner.Scan(), curProcessType, scanner, seeds, seedToSoil, soilToFert, fertToWater, waterToLight, lightToTemp, tempToHumidity, humidityToLocation)
@@ -179,9 +182,7 @@ func getDestination(input int, lookups [][]int) int {
 		lastSrcNumber := src + rangeStop
 		diff := input - src
 
-		fmt.Printf("input %d src %d dest %d range %d\n", input, src, dest, rangeStop)
-
-		if ((input >= src && input <= lastSrcNumber) && diff <= rangeStop) {
+		if ((input >= src && input <= lastSrcNumber) && diff < rangeStop) {
 			srcDiff := input - src
 
 			out = dest + srcDiff
@@ -208,35 +209,4 @@ func processSeed(seed int, seedToSoil [][]int, soilToFert [][]int, fertToWater [
 	}
 
 	return loc
-}
-
-
-
-func partTwo() {
-	file, err := os.Open("/Users/zachstoltz/develop/aoc/day5/p2")
-	if err != nil {
-			log.Fatal(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	digit := solveDayFourPartTwo([][]string{}, scanner.Scan(), scanner)
-	finalPrint := fmt.Sprintf("Part Two %d\n", digit)
-
-	fmt.Print(finalPrint)
-
-	if err := scanner.Err(); err != nil {
-			log.Fatal(err)
-	}
-}
-
-func solveDayFourPartTwo(contents [][]string, hasMoreLines bool, scanner *bufio.Scanner) int {
-	if (hasMoreLines) {
-		// text := scanner.Text()
-
-
-		return solveDayFourPartTwo(contents, scanner.Scan(), scanner)
-	}
-
-	return 0;
 }
